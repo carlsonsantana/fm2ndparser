@@ -64,7 +64,36 @@ namespace Fm2ndParser
 
         private static void RunOptions(Options options)
         {
-            var kgtFile = options.InputFiles.Single();
+            var inputFile = options.InputFiles.Single();
+            var extension = Path.GetExtension(inputFile).ToLowerInvariant();
+
+            switch (extension)
+            {
+                case ".kgt":
+                    parseKgt(inputFile, options);
+                    break;
+                case ".player":
+                    parseSingle(new PlayerParser(inputFile, null).Parse(), inputFile, options);
+                    break;
+                case ".stage":
+                    parseSingle(new StageParser(inputFile, null).Parse(), inputFile, options);
+                    break;
+                case ".demo":
+                    parseSingle(new DemoParser(inputFile, null).Parse(), inputFile, options);
+                    break;
+                default:
+                    Console.WriteLine($"Unsupported file type '{extension}'. Expected .kgt, .player, .stage or .demo.");
+                    break;
+            }
+        }
+
+        private static void parseSingle(FMFile fmFile, string filename, Options options)
+        {
+            doParse(fmFile, filename, options.CleanUp, !options.NewFiles, options.ExportResources);
+        }
+
+        private static void parseKgt(string kgtFile, Options options)
+        {
             var baseDir = Path.GetDirectoryName(kgtFile);
             var parser = new KGTParser(kgtFile);
             var kgt = parser.Parse();
