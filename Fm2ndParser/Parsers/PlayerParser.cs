@@ -175,7 +175,7 @@ namespace Fm2ndParser.Parsers
                 Stage = stage > 0 ? new SkillReference
                 {
                     Number = stage,
-                    Name = _kgt.Stages[stage - 1],
+                    Name = _kgt?.Stages != null ? _kgt.Stages[stage - 1] : null,
                 } : null,
                 NumbOfRounds = numbOfRounds,
                 FirstLife = firstLife,
@@ -253,7 +253,7 @@ namespace Fm2ndParser.Parsers
                 Character = character > 0 ? new SkillReference
                 {
                     Number = character,
-                    Name = _kgt.Characters.Skip(character - 1).First(),
+                    Name = _kgt?.Characters != null ? _kgt.Characters.Skip(character - 1).First() : null,
                 } : null,
                 CpuLevel = cpuLevel,
                 PlayerIsEnemy = playerIsEnemy,
@@ -289,7 +289,7 @@ namespace Fm2ndParser.Parsers
                 Demo = demoIndex > 0 ? new SkillReference
                 {
                     Number = demoIndex,
-                    Name = _kgt.Demos.Skip(demoIndex - 1).First()
+                    Name = _kgt?.Demos != null ? _kgt.Demos.Skip(demoIndex - 1).First() : null
                 } : null,
             };
             skipEmptyBytes(bytes, 0xCB, ref offset);
