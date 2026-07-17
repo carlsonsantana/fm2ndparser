@@ -276,7 +276,14 @@ namespace Fm2ndParser
                 int soundIndex = 0;
                 foreach (var sound in fmFile.Sounds)
                 {
-                    var soundPath = Path.Combine(soundDir, $"{soundIndex:D4}.wav");
+                    var extension = sound.Type switch
+                    {
+                        SoundType.Wave => "wav",
+                        SoundType.Midi => "mid",
+                        SoundType.CDDA => "cda",
+                        _ => "bin",
+                    };
+                    var soundPath = Path.Combine(soundDir, $"{soundIndex:D4}.{extension}");
                     File.WriteAllBytes(soundPath, sound.Data ?? Array.Empty<byte>());
                     soundIndex++;
                 }
