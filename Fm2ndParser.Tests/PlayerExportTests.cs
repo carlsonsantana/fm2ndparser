@@ -13,6 +13,10 @@ namespace Fm2ndParser.Tests
         private const string PlayerFixture = "character.player";
         private static readonly string[] ReferenceImages = { "0000.bmp", "0001.bmp" };
 
+        // Reference sounds, named after the snd/ files they must match (sound index +
+        // original extension): 0001.mid is the MIDI at index 1, 0002.wav the wave at index 2.
+        private static readonly string[] ReferenceSounds = { "0001.mid", "0002.wav" };
+
         [Fact]
         public void Player_Exports_Exactly_Two_Images_Matching_References_Except_Transparent()
         {
@@ -40,6 +44,49 @@ namespace Fm2ndParser.Tests
                     var reference = Bmp.Load(Path.Combine(fixturesDir, ReferenceImages[i]));
                     var actual = Bmp.Load(exported[i]);
                     AssertMatchesExceptTransparent(reference, actual, Path.GetFileName(exported[i]));
+                }
+            }
+            finally
+            {
+                try { Directory.Delete(workDir, recursive: true); } catch { /* best effort */ }
+            }
+        }
+
+        [Fact]
+        public void Player_Exports_Sounds_Byte_For_Byte_Matching_References()
+        {
+            var fixturesDir = Path.Combine(AppContext.BaseDirectory, "Fixtures");
+            var playerPath = Path.Combine(fixturesDir, PlayerFixture);
+            Assert.True(File.Exists(playerPath), $"Missing fixture: {playerPath}");
+
+            // Run the CLI end-to-end in an isolated working directory, since the tool
+            // writes output relative to the current working directory.
+            var workDir = Path.Combine(Path.GetTempPath(), "fm2nd-test-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(workDir);
+            try
+            {
+                RunExport(playerPath, workDir);
+
+                var baseName = Path.GetFileNameWithoutExtension(PlayerFixture);
+                var sndDir = Path.Combine(workDir, baseName, "snd");
+                Assert.True(Directory.Exists(sndDir), $"Export produced no snd/ folder at {sndDir}");
+
+                foreach (var soundName in ReferenceSounds)
+                {
+                    var referencePath = Path.Combine(fixturesDir, soundName);
+                    Assert.True(File.Exists(referencePath), $"Missing reference sound: {referencePath}");
+
+                    var exportedPath = Path.Combine(sndDir, soundName);
+                    Assert.True(File.Exists(exportedPath),
+                        $"Export produced no sound at {exportedPath}");
+
+                    var expected = File.ReadAllBytes(referencePath);
+                    var actual = File.ReadAllBytes(exportedPath);
+
+                    // Sounds are written verbatim, so the export must match the reference exactly.
+                    Assert.True(expected.SequenceEqual(actual),
+                        $"{soundName}: exported sound does not match reference — " +
+                        $"expected {expected.Length} bytes, got {actual.Length} bytes");
                 }
             }
             finally
