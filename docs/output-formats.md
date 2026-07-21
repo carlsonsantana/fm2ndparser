@@ -81,6 +81,24 @@ written into the BMP color table verbatim, so the on-disk byte order is whatever
 source uses. (In the JSON, standalone colors are exposed as `{ r, g, b, a }` — see
 `Rgba` in [json-spec.md](json-spec.md).)
 
+### 5-bit color precision
+
+2D Fighter Maker 2nd stores palette colors at **5 bits per channel**: each channel's
+value occupies the **top 5 bits** of its byte and the **low 3 bits are always `0`**.
+Because the tool copies palette bytes verbatim (no scaling), exported BMP channel values
+are always **multiples of 8** — for example, white is `0xF8` (248), not `0xFF` (255) — so
+exported images look slightly darker than a full 8-bit range.
+
+This is intentional: it preserves the source values exactly rather than inventing the low
+bits that were never stored. If you need full-range 8-bit color, expand each channel with
+`b | (b >> 5)` (which maps `248` → `255`); but the raw, un-expanded export is the faithful
+representation of the source.
+
+> **Note:** image editors that open and re-save an exported BMP typically expand 5-bit to
+> full range (and may re-quantize mid-tones), so a re-saved copy will *not* be byte-equal to
+> the tool's output. Comparisons should allow a small per-channel tolerance (see the export
+> test in `Fm2ndParser.Tests`).
+
 ### Two palette sources
 
 Each image has a `paletteType` field (see `ImageResource` in

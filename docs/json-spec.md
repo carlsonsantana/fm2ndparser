@@ -113,6 +113,10 @@ Standalone color object (used by `ColorBlock`, `EBBlock`, `AIBlock`).
 | `b`   | byte | both  | |
 | `a`   | byte | both  | Alpha. |
 
+Channels are stored at **5-bit precision** (top 5 bits; values are multiples of 8), as
+2D Fighter Maker 2nd keeps them — see
+[5-bit color precision](output-formats.md#5-bit-color-precision).
+
 ### SkillReference
 
 A pointer to another skill by name and/or index.
