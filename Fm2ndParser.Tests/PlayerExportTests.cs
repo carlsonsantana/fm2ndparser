@@ -48,9 +48,15 @@ namespace Fm2ndParser.Tests
             }
         }
 
-        // Max allowed per-channel difference for non-transparent pixels. Fighter Maker
-        // palettes are 5-bit per channel, so image editors that re-save the reference
-        // (re-quantizing the palette) can shift a channel by up to one 5-bit step.
+        // Max allowed per-channel difference for non-transparent pixels.
+        //
+        // 2D Fighter Maker 2nd stores palette colors as 5 bits per channel: the value
+        // lives in the top 5 bits of each byte and the low 3 bits are always 0. The
+        // exporter writes those bytes verbatim, so exported channels are multiples of 8
+        // (e.g. white is 248, not 255). An image editor that re-saves the reference BMP
+        // expands 5-bit to full 8-bit range (and re-quantizes mid-tones), so the same
+        // logical color can shift by up to one 5-bit step. We therefore compare within
+        // +/-8 instead of exact match. See docs/output-formats.md ("5-bit color precision").
         private const int ColorTolerance = 8;
 
         /// <summary>
